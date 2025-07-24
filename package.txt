@@ -1,0 +1,26 @@
+
+{
+  "name": "vite-svelte-starter",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node server",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "vite build --config vite.config.client.js",
+    "build:server": "vite build --config vite.config.server.js",
+    "preview": "cross-env NODE_ENV=production node server"
+  },
+  "dependencies": {
+    "compression": "^1.8.0",
+    "express": "^5.1.0",
+    "sirv": "^3.0.1",
+    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.52.0"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^5.1.0",
+    "cross-env": "^7.0.3",
+    "svelte": "^5.34.9",
+    "vite": "^6.0.0"
+  }
+}
