@@ -6,8 +6,10 @@ import os from "os";
 import { Worker, isMainThread, threadId, parentPort } from "worker_threads";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
-import { render } from "./dist/server/entry-server.js";
+import { render } from "./build/server/entry-server.js";
 import path from "path";
+
+import { routes as server } from "./routes/server.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -18,11 +20,11 @@ const base = process.env.BASE || "/";
 
 let templateHtml = "";
 if (isProduction) {
-  templateHtml = await fs.readFile("./dist/client/index.html", "utf-8");
+  templateHtml = await fs.readFile("./build/client/shared/index.html", "utf-8");
 }
 
 if (isMainThread) {
-  const acceptorApp = uWS.App().listen(port, (token) => {
+  const acceptorApp = uWS.App().listen("0.0.0.0", port, (token) => {
     if (token) {
       console.log(
         `Listening to port ${port} from thread ${threadId} as main acceptor`,
@@ -45,7 +47,7 @@ if (isMainThread) {
 
   app.get("/assets/*", (res, req) => {
     res.onAborted(() => {
- //     console.log("Request aborted");
+      //     console.log("Request aborted");
     });
 
     (async () => {
@@ -71,6 +73,8 @@ if (isMainThread) {
       }
     })();
   });
+
+server(app)
 
   app.get("/*", (res, req) => {
     const url = req.getUrl();
@@ -116,11 +120,11 @@ if (isMainThread) {
     })();
   });
 
-  app.listen(4000, (token) => {
+  app.listen("0.0.0.0", 4000, (token) => {
     if (token) {
-      console.log(`Listening to port 4000 from thread ${threadId}`);
+      console.log(`Deployed worker from thread ${threadId}`);
     } else {
-      console.error(`❌ Failed to listen on port 4000`);
+      console.error(`❌ Failed to deploy worker`);
     }
   });
 
