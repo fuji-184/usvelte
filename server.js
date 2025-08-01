@@ -18,13 +18,15 @@ const port = 8080;
 const isProduction = true;
 const base = process.env.BASE || "/";
 
-let templateHtml = "";
+export let templateHtml = "";
 if (isProduction) {
   templateHtml = await fs.readFile("./build/client/shared/index.html", "utf-8");
 }
 
 if (isMainThread) {
-  const acceptorApp = uWS.App().listen("0.0.0.0", port, (token) => {
+ const cache = new Map();
+
+const acceptorApp = uWS.App().listen("0.0.0.0", port, (token) => {
     if (token) {
       console.log(
         `Listening to port ${port} from thread ${threadId} as main acceptor`,
@@ -34,16 +36,23 @@ if (isMainThread) {
     }
   });
 
+    const workers = new Set()
+
   const numCores = os.cpus().length;
   for (let i = 1; i < numCores; i++) {
-    new Worker(__filename).on("message", (desc) => {
-      acceptorApp.addChildAppDescriptor(desc);
+    const worker = new Worker(__filename)
+    worker.on("message", (msg) => {
+            if (msg.type === "init"){
+      acceptorApp.addChildAppDescriptor(msg.data)
+            }
     });
+
+        workers.add(worker)
+
+
   }
 } else {
   const app = uWS.App();
-
-  const cache = new Map();
 
   app.get("/assets/*", (res, req) => {
     res.onAborted(() => {
@@ -76,51 +85,7 @@ if (isMainThread) {
 
 server(app)
 
-  app.get("/*", (res, req) => {
-    const url = req.getUrl();
-
-    res.onAborted(() => {
-      //      console.log('Page request aborted for:', url)
-    });
-
-    if (cache.has(url)) {
-      res.cork(() => {
-        res
-          .writeStatus("200 OK")
-          .writeHeader("Content-Type", "text/html; charset=utf-8")
-          .end(cache.get(url));
-      });
-      return;
-    }
-
-    (async () => {
-      try {
-        const rendered = await render(url);
-        const html = templateHtml
-          .replace("<!--app-head-->", rendered.head || "")
-          .replace("<!--app-html-->", rendered.body || "");
-
-        cache.set(url, html);
-
-        res.cork(() => {
-          res
-            .writeStatus("200 OK")
-            .writeHeader("Content-Type", "text/html; charset=utf-8")
-            .end(html);
-        });
-      } catch (err) {
-        console.error("Render error for", url, ":", err);
-        res.cork(() => {
-          res
-            .writeStatus("500 Internal Server Error")
-            .writeHeader("Content-Type", "text/plain")
-            .end("Internal Server Error");
-        });
-      }
-    })();
-  });
-
-  app.listen("0.0.0.0", 4000, (token) => {
+app.listen("0.0.0.0", 4000, (token) => {
     if (token) {
       console.log(`Deployed worker from thread ${threadId}`);
     } else {
@@ -128,5 +93,5 @@ server(app)
     }
   });
 
-  parentPort.postMessage(app.getDescriptor());
+  parentPort.postMessage({ type: "init", data: app.getDescriptor() });
 }

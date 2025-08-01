@@ -1,8 +1,11 @@
 //# allFunctionsCalledOnLoad
 
-// dynamic import for only importing what is needed
+// we can set whatever name when importing the ui
+
+import about from "../features/about/ui.svelte";
+import home from "../features/home/ui.svelte";
 
 export const routes = {
-  '/':      () => import('../features/home/ui.svelte'),
-  '/about': () => import('../features/about/ui.svelte'),
+  "/": home,
+  "/about": about,
 };

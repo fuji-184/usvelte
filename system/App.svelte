@@ -4,7 +4,7 @@
   import { onMount } from 'svelte';
   import { routes } from '../routes/client.js'
 
-  const { url } = $props()
+  const { url, data } = $props()
 
   const fallbackRoute = routes['/'];
   const initialRoute = routes[url] ?? fallbackRoute;
@@ -64,4 +64,4 @@
   });
 </script>
 
-<Component/>
+<Component data={data}/>

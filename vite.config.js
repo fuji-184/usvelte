@@ -17,6 +17,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./"), // opsional: import dari '@/entry-client.js'
+  // "@": path.resolve(__dirname, "./"), // opsional: import dari '@/entry-client.js'
     },
   },
 });

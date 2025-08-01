@@ -1,10 +1,24 @@
-const get = async (res, req) => {
-  res
-    .writeStatus("200 OK")
-    .writeHeader("Content-Type", "text/html; charset=utf-8")
-    .end("hello");
-};
+import { ui } from "../../system/handler.js"
+
+const get_data = ()=>{
+    return "tessss"
+}
+
+const get_ui = async (res, req) => {
+    await ui("/", get_data(), res)
+}
+
+const get_json = async (res, req) => {
+    res
+        .writeStatus("200 OK")
+        .writeHeader("Content-Type", "application/json")
+        .end(get_data())
+
+}
 
 export default {
-  get,
+    get_ui,
+    get_json
 };
+
+// i think this can be implemented in user code space, no need for framework abstraction :v
