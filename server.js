@@ -24,7 +24,6 @@ if (isProduction) {
 }
 
 if (isMainThread) {
- const cache = new Map();
 
 const acceptorApp = uWS.App().listen("0.0.0.0", port, (token) => {
     if (token) {
@@ -36,16 +35,18 @@ const acceptorApp = uWS.App().listen("0.0.0.0", port, (token) => {
     }
   });
 
-    const workers = new Set()
+   const workers = new Set()
 
   const numCores = os.cpus().length;
   for (let i = 1; i < numCores; i++) {
-    const worker = new Worker(__filename)
+    const worker = new Worker(__filename, {
+            workerData: { id: i }
+        })
     worker.on("message", (msg) => {
             if (msg.type === "init"){
       acceptorApp.addChildAppDescriptor(msg.data)
             }
-    });
+        });
 
         workers.add(worker)
 
@@ -60,9 +61,11 @@ const acceptorApp = uWS.App().listen("0.0.0.0", port, (token) => {
     });
 
     (async () => {
-      const filePath = path.join(__dirname, "dist/client", req.getUrl());
+      const filePath = path.join(__dirname, "build/client", req.getUrl());
 
+        const url = req.getUrl()
       try {
+
         const file = await fs.readFile(filePath);
         const ext = path.extname(filePath);
         const mime =
