@@ -28,34 +28,6 @@ export const sync = (handler) => {
     });
   };
 };
-
-export const get_with_ui = async (url, app, handler) => {
-   app.get(url, (res, req) => {
-    (async () => {
-        try {
-    const data = await handler(req, res)
-    const rendered = await render(req.getUrl(), data);
-    const html = templateHtml
-      .replace("<!--app-head-->", rendered.head || "")
-      .replace("<!--app-html-->", rendered.body || "");
-
-    res
-      .writeStatus("200 OK")
-      .writeHeader("Content-Type", "text/html; charset=utf-8")
-      .end(html);
-  } catch (err) {
-    console.error("Render error for", url, ":", err);
-    res.cork(() => {
-      res
-        .writeStatus("500 Internal Server Error")
-        .writeHeader("Content-Type", "text/plain")
-        .end("Internal Server Error");
-    });
-  }
-        })()
-        })
-};
-
 export const ui = async(url, data, res) => {
    const type = "text/html; charset=utf-8"
 /*
@@ -68,13 +40,16 @@ export const ui = async(url, data, res) => {
         })
     } else {
 */
-    const rendered = await render(url, data);
-        const html = templateHtml
+       const rendered = await render(url,data);
+        data = encodeURIComponent(data)
+    const html = templateHtml
           .replace("<!--app-head-->", rendered.head || "")
-          .replace("<!--app-html-->", rendered.body || "");
-       // cache.set(url, html)
+          .replace("<!--app-html-->", rendered.body || "")
+        .replace('usvelte_data', data)
 
-        res.cork(() => {
+
+
+    res.cork(() => {
           res
             .writeStatus("200 OK")
             .writeHeader("Content-Type", type)

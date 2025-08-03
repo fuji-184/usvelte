@@ -3,12 +3,19 @@ import { parentPort, workerData } from "worker_threads"
 //import { cache } from "../../system/utils.js"
 
 const get_data = ()=>{
-    return "tessss"
+
+    const data = JSON.stringify({
+        nama: "fuji"
+    })
+    return data
 }
 
 const get_ui = async (res, req) => {
 
-    await ui("/", get_data(), res)
+    const data = JSON.stringify({
+        nama: "fuji"
+    })
+    await ui("/", data, res)
 }
 
 const get_json = async (res, req) => {
